@@ -13,18 +13,87 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  username  String
-  password  String
-  status    String   @default("active")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
 model Session {
   id        String   @id 
   sid       String   @unique
   data      String   @db.VarChar(255)
   expiresAt   DateTime
+}
+
+model Users {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  username  String
+  password  String
+  isActive  Boolean   @default(true)
+  artista   Artists? // Relación uno a uno
+  roles     Roles[]
+  tempToken Temporal_token_pool[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Artists {
+  id             Int      @id @default(autoincrement())
+  artist_name    String
+  instagram      String?
+  spotify        String?
+  imagen         String?
+  info           String?
+  tipo           String
+  userId        Int      @unique
+  user           Users     @relation(fields: [userId], references: [id])
+  songs          Songs[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Roles {
+  id             Int      @id @default(autoincrement())
+  rolName       String
+  userRoles      Users[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Temporal_token_pool {
+  id             Int      @id @default(autoincrement())
+  token          String   @unique
+  userEmail     String
+  user           Users     @relation(fields: [userEmail], references: [email])
+  type           String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model App_messages {
+  id             Int      @id @default(autoincrement())
+  message        String
+  type           String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+model Genres {
+  id             Int      @id @default(autoincrement())
+  genreName     String
+  songs          Songs[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+model Songs {
+  id             Int      @id @default(autoincrement())
+  songName      String
+  artistId      Int
+  artist         Artists @relation(fields: [artistId], references: [id])
+  description    String
+  featured       Boolean
+  genres         Genres[]
+  imagen         String?
+  audioUrl      String?
+  youtubeId     String?
+  spotifyLink   String?
+  isActived     Boolean @default(true)
+  releaseDate   DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
