@@ -26,8 +26,9 @@ model Users {
   username  String
   password  String
   isActive  Boolean   @default(true)
-  artista   Artists? // Relación uno a uno
+  artists   Artists[]
   roles     Roles[]
+  projects  Projects[]
   tempToken Temporal_token_pool[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -35,22 +36,30 @@ model Users {
 
 model Artists {
   id             Int      @id @default(autoincrement())
-  artist_name    String
+  artistName     String
   instagram      String?
   spotify        String?
   imagen         String?
-  info           String?
-  tipo           String
-  userId        Int      @unique
-  user           Users     @relation(fields: [userId], references: [id])
-  songs          Songs[]
+  description    String?
+  userId         Int      
+  user           Users    @relation(fields: [userId], references: [id])
+  songs          Projects_artists[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  typeId         Int
+  typeOfArtist   Type_of_artists @relation(fields: [typeId], references: [id])
+}
+model Type_of_artists {
+  id             Int      @id @default(autoincrement())
+  typeName       String
+  artists        Artists[]
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
 
 model Roles {
   id             Int      @id @default(autoincrement())
-  rolName       String
+  rolName        String
   userRoles      Users[]
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -59,8 +68,8 @@ model Roles {
 model Temporal_token_pool {
   id             Int      @id @default(autoincrement())
   token          String   @unique
-  userEmail     String
-  user           Users     @relation(fields: [userEmail], references: [email])
+  userEmail      String
+  user           Users    @relation(fields: [userEmail], references: [email])
   type           String
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -76,24 +85,73 @@ model App_messages {
 model Genres {
   id             Int      @id @default(autoincrement())
   genreName     String
-  songs          Songs[]
+  songs          Projects[]
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
-model Songs {
-  id             Int      @id @default(autoincrement())
+model Projects {
+  id            Int       @id @default(autoincrement())
   songName      String
-  artistId      Int
-  artist         Artists @relation(fields: [artistId], references: [id])
-  description    String
-  featured       Boolean
-  genres         Genres[]
-  imagen         String?
-  audioUrl      String?
-  youtubeId     String?
-  spotifyLink   String?
-  isActived     Boolean @default(true)
-  releaseDate   DateTime
+  userId        Int       
+  user          Users     @relation(fields: [userId], references: [id])
+  artists       Projects_artists[]
+  description   String
+  genres        Genres[]
+  status        Projects_status[]
+  files         Project_media[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Project_media {
+  id             Int      @id @default(autoincrement())
+  projectId      Int
+  project        Projects @relation(fields: [projectId], references: [id])
+  fileUrl        String
+  clientUrl      String
+  fileTypeId     Int
+  media_type      Media_types @relation(fields: [fileTypeId], references: [id])
+  Projects_status Projects_status[]
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+}
+model Media_types {
+  id             Int      @id @default(autoincrement())
+  typeName       String
+  media          Project_media[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+model Status_names {
+  id             Int      @id @default(autoincrement())
+  statusName     String
+  projects       Projects_status[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Projects_status {
+  id             Int      @id @default(autoincrement())
+  projectId      Int
+  statusId       Int
+  status         Status_names @relation(fields: [statusId], references: [id])
+  project        Projects @relation(fields: [projectId], references: [id])
+  projectMediaId Int
+  projectMedia   Project_media? @relation(fields: [projectMediaId], references: [id])
+  description    String
+  startDate      DateTime
+  endDate        DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Projects_artists {
+  artistId       Int      
+  projectId      Int
+  artist         Artists  @relation(fields: [artistId], references: [id])
+  project        Projects @relation(fields: [projectId], references: [id])
+  isFT           Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  @@id([artistId, projectId])
 }
